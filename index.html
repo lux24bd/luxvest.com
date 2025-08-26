@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luxvest</title>
+<style>
+    /* Reset default margin/padding */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 10px;
+    }
+
+    .card {
+        width: 100%;
+        max-width: 420px;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Layer 1: Header */
+    .header {
+        background-color: #e0f7fa;
+        text-align: center;
+        padding: 25px 20px;
+    }
+
+    .header h1 {
+        font-size: 2em;
+        color: #00796b;
+    }
+
+    .header p {
+        font-size: 1em;
+        color: #004d40;
+        margin-top: 5px;
+    }
+
+    .coming-soon {
+        margin-top: 10px;
+        font-weight: bold;
+        color: #ff5722;
+    }
+
+    /* Layer 2: Luxvest description */
+    .body {
+        background-color: #f1f8e9;
+        padding: 20px;
+        text-align: center;
+        color: #33691e;
+        font-size: 1em;
+        line-height: 1.5;
+    }
+
+    /* Layer 3: Bringing secure and digital vision */
+    .vision {
+        background-color: #fff3e0;
+        color: #bf360c;
+        padding: 20px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1em;
+    }
+
+    /* Layer 4: Highlights */
+    .highlights {
+        background-color: #ede7f6;
+        padding: 20px;
+    }
+
+    .highlights ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .highlights li {
+        margin: 8px 0;
+        position: relative;
+        padding-left: 25px;
+        color: #5e35b1;
+        font-size: 1em;
+    }
+
+    .highlights li::before {
+        content: "🔹";
+        position: absolute;
+        left: 0;
+    }
+
+    .footer {
+        text-align: center;
+        font-size: 0.85em;
+        color: #888;
+        margin-top: 15px;
+    }
+
+    /* Responsive text scaling */
+    @media (max-width: 480px) {
+        .header h1 {
+            font-size: 1.6em;
+        }
+        .header p, .coming-soon, .body, .vision, .highlights li {
+            font-size: 0.95em;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="card">
+        <!-- Header -->
+        <div class="header">
+            <h1>🌍 Luxvest</h1>
+            <p>Smart Investment • Global Vision</p>
+            <p class="coming-soon">🚀 Coming soon to Bangladesh</p>
+        </div>
+
+        <!-- Layer 2: Luxvest description -->
+        <div class="body">
+            <p><strong>Luxvest</strong> – international standard smart investment platform.</p>
+        </div>
+
+        <!-- Layer 3: Bringing secure and digital vision -->
+        <div class="vision">
+            bringing secure and digital vision.
+        </div>
+
+        <!-- Layer 4: Highlights -->
+        <div class="highlights">
+            <ul>
+                <li>Secure & smart investment tools</li>
+                <li>Transparent & modern technology</li>
+                <li>A touch of global expertise</li>
+            </ul>
+            <div class="footer">Stay tuned...<br>© Luxvest – Smart Investment, Global Vision</div>
+        </div>
+    </div>
+</body>
+</html>
