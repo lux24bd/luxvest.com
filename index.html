@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUXVEST - Smart Investment Platform</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #0f172a;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 36px; }
+        .brand-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #475569;
+            border-radius: 14px;
+            padding: 30px;
+            text-align: center;
+        }
+        .brand-title { font-size: 2.8rem; font-weight: bold; color: white; margin-bottom: 12px; letter-spacing: -0.015em; }
+        .brand-slogan { color: #60a5fa; font-size: 1.25rem; font-weight: 500; letter-spacing: 0.07em; }
+        .auth-header { text-align: center; }
+        .auth-title { font-size: 2.1rem; font-weight: bold; margin-bottom: 10px; }
+        .auth-subtitle { color: #d1d5db; font-size: 1.05rem; }
+        .auth-toggle {
+            display: flex;
+            background: #1e293b;
+            padding: 6px;
+            border-radius: 10px;
+            gap: 0;
+        }
+        .toggle-btn {
+            flex: 1;
+            padding: 12px 22px;
+            font-size: 1.08rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .toggle-btn.active { background: #3b82f6; color: white; }
+        .toggle-btn.inactive { background: transparent; color: #9ca3af; }
+        .toggle-btn.inactive:hover { color: white; }
+        .form-card {
+            background: #1e293b;
+            border: 1.5px solid #475569;
+            border-radius: 14px;
+            padding: 30px 28px;
+        }
+        .form-group { margin-bottom: 22px; }
+        .form-label {
+            display: block;
+            font-size: 1.08rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #f1f5f9;
+        }
+        .form-input {
+            width: 100%;
+            padding: 14px 14px;
+            background: #334155;
+            border: 1.5px solid #475569;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.12rem;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus { outline: none; border-color: #3b82f6; }
+        .form-input::placeholder { color: #94a3b8; font-size: 1.06rem; }
+        .captcha-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+        .captcha-question {
+            background: #334155;
+            border: 1.5px solid #475569;
+            border-radius: 8px;
+            padding: 13px 15px;
+            color: #60a5fa;
+            font-weight: 600;
+            min-width: 110px;
+            text-align: center;
+            letter-spacing: 0.34em;
+            font-size: 1.5em;
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+        }
+        .captcha-input {
+            width: 95px;
+            min-width: 0;
+            padding: 13px 7px;
+            background: #334155;
+            border: 1.5px solid #475569;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 0.34em;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .refresh-btn {
+            background: #475569;
+            border: none;
+            border-radius: 8px;
+            padding: 13px 15px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 1.1rem;
+        }
+        .refresh-btn:hover { background: #64748b; }
+        .submit-btn {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1.12rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 22px;
+        }
+        .submit-btn:hover { background: #2563eb; }
+        .forgot-link {
+            display: block;
+            text-align: center;
+            color: #60a5fa;
+            font-size: 1.02rem;
+            text-decoration: none;
+            margin-top: 18px;
+        }
+        .forgot-link:hover { text-decoration: underline; }
+        @media (max-width: 480px) {
+            .brand-title { font-size: 2.1rem; }
+            .container { gap: 24px; }
+            .form-card { padding: 22px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Brand Card -->
+        <div class="brand-card">
+            <h1 class="brand-title">LUXVEST</h1>
+            <p class="brand-slogan">smart investment • global vision</p>
+        </div>
+        <!-- Auth Header -->
+        <div class="auth-header">
+            <h2 class="auth-title" id="authTitle">Login</h2>
+            <p class="auth-subtitle" id="authSubtitle">Access your account</p>
+        </div>
+        <!-- Auth Toggle -->
+        <div class="auth-toggle">
+            <button class="toggle-btn active" id="loginTab" onclick="switchTab('login')">Login</button>
+            <button class="toggle-btn inactive" id="signupTab" onclick="switchTab('signup')">Sign Up</button>
+        </div>
+        <!-- Login Form -->
+        <div class="form-card" id="loginForm">
+            <form>
+                <div class="form-group">
+                    <label class="form-label" for="phone">Phone Number</label>
+                    <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="submit-btn">Sign In</button>
+                <a href="#" class="forgot-link">Forgot your password?</a>
+            </form>
+        </div>
+        <!-- Signup Form -->
+        <div class="form-card" id="signupForm" style="display: none;">
+            <form>
+                <div class="form-group">
+                    <label class="form-label" for="signupFullName">Full Name</label>
+                    <input type="text" id="signupFullName" class="form-input" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signupPhone">Phone Number</label>
+                    <input type="tel" id="signupPhone" class="form-input" placeholder="Enter your phone number" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" class="form-input" placeholder="Enter your email address" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" class="form-input" placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="referralCode">Referral Code <span style="color:#aaa;font-weight:400">(optional)</span></label>
+                    <input type="text" id="referralCode" class="form-input" placeholder="Enter referral code (if any)">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Captcha Verification</label>
+                    <div class="captcha-container">
+                        <div class="captcha-question" id="captchaQuestion">aB6g</div>
+                        <input type="text" maxlength="4" class="captcha-input" id="captchaInput" placeholder="****" required autocomplete="off">
+                        <button type="button" class="refresh-btn" onclick="refreshCaptcha()">↻</button>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn" style="margin-top:22px;">Create Account</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        let currentTab = 'login';
+        let captchaAnswer = '';
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('loginTab').className = tab === 'login' ? 'toggle-btn active' : 'toggle-btn inactive';
+            document.getElementById('signupTab').className = tab === 'signup' ? 'toggle-btn active' : 'toggle-btn inactive';
+            document.getElementById('authTitle').textContent = tab === 'login' ? 'Login' : 'Sign Up';
+            document.getElementById('authSubtitle').textContent = tab === 'login' ? 'Access your account' : 'Create a new account';
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
+        }
+        function randomCaptchaString(length) {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+            let str = '';
+            for (let i = 0; i < length; i++) {
+                str += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return str;
+        }
+        function refreshCaptcha() {
+            const code = randomCaptchaString(4);
+            document.getElementById('captchaQuestion').textContent = code;
+            captchaAnswer = code;
+            document.getElementById('captchaInput').value = '';
+        }
+        // Initialize captcha
+        refreshCaptcha();
+        // Prevent form submit if captcha mismatch
+        document.getElementById('signupForm').querySelector('form').onsubmit = function(e) {
+            const userValue = document.getElementById('captchaInput').value.trim();
+            if (userValue !== captchaAnswer) {
+                alert('Captcha incorrect! Try again.');
+                refreshCaptcha();
+                document.getElementById('captchaInput').focus();
+                e.preventDefault();
+                return false;
+            }
+        };
+    </script>
+</body>
+</html>
