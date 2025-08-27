@@ -1,0 +1,1052 @@
+<!--
+LUXVEST - FullStack Authentication & Dashboard (MongoDB-backed API + Frontend)
+Deploy-ready for platforms like GitHub (with backend).
+Backend API endpoints expected: /api/register, /api/login, /api/user
+-->
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LUXVEST - Smart Investment • Global Vision</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Shared/Global Styles --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+        .hidden { display:none !important; }
+        /* --- Auth Styles --- */
+        .bg-pattern {
+            position: absolute; inset: 0; overflow: hidden;
+        }
+        .bg-pattern::before, .bg-pattern::after {
+            content: ''; position: absolute;
+            width: 384px; height: 384px; border-radius: 50%;
+            mix-blend-mode: multiply; filter: blur(64px); opacity: 0.1;
+            animation: pulse 4s ease-in-out infinite;
+        }
+        .bg-pattern::before { top: -16px; right: -16px; background: #3b82f6; }
+        .bg-pattern::after { bottom: -32px; left: -16px; background: #8b5cf6; animation-delay: 2s; }
+        @keyframes pulse { 0%,100%{opacity:0.1; transform:scale(1);} 50%{opacity:0.15; transform:scale(1.05);} }
+        .container { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem;}
+        .auth-card {
+            backdrop-filter: blur(20px); background:rgba(15,23,42,0.85);
+            border: 1px solid rgba(71,85,105,0.3); border-radius:1rem;
+            padding: 2rem; width:100%; max-width:28rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .header { text-align: center; margin-bottom:2rem;}
+        .logo { display:flex; align-items:center; justify-content:center; margin-bottom:0.5rem;}
+        .logo-icon { width:2rem; height:2rem; margin-right:0.75rem; color:#f1f5f9;}
+        .logo-text { font-size:2.25rem; font-weight:700; letter-spacing:-0.025em; color:#f1f5f9;}
+        .tagline { color:#bfdbfe; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; font-size:0.875rem;}
+        .tab-container { display:flex; margin-bottom:2rem; background:rgba(55,65,81,0.5); border-radius:0.75rem; padding:0.25rem;}
+        .tab-button { flex:1; padding:0.5rem 1rem; border-radius:0.5rem; font-weight:500; font-size:0.875rem; transition:all 0.3s; background:none; border:none; cursor:pointer; color:#9ca3af;}
+        .tab-button.active { background:#2563eb; color:white; box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+        .tab-button:hover:not(.active){color:white;}
+        .form-container { display:none;}
+        .form-container.active { display:block;}
+        .form-group { margin-bottom:1.5rem;}
+        .label { display:block; font-size:0.875rem; font-weight:500; color:#e5e7eb; margin-bottom:0.5rem;}
+        .input-field { width:100%; height:2.9rem; padding:0.8rem; border:1px solid #4b5563; border-radius:0.75rem; background:rgba(55,65,81,0.5); color:#f3f4f6; font-size:0.95rem; transition:all 0.3s ease; outline:none;}
+        .input-field::placeholder { color:#9ca3af;}
+        .input-field:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1); transform:translateY(-1px);}
+        .captcha-input { display:flex; align-items:center; justify-content:space-between; width:100%; height:2.9rem; padding:0.75rem; border:1px solid #4b5563; border-radius:0.75rem; background:rgba(55,65,81,0.5); transition:all 0.3s ease;}
+        .captcha-input:focus-within { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1);}
+        .captcha-text { background:transparent; color:#f3f4f6; border:none; outline:none; flex:1; min-width:0;}
+        .captcha-text::placeholder { color:#9ca3af;}
+        .captcha-code { font-size:0.875rem; font-weight:700; color:#f1f5f9; font-family:'Courier New',monospace; background:linear-gradient(135deg,#374151,#4b5563); padding:0.5rem; border-radius:0.25rem; text-align:center; min-width:60px; margin-right:0.5rem; user-select:none;}
+        .refresh-btn { background:none; border:none; color:#9ca3af; cursor:pointer; padding:0.25rem; width:1.5rem; height:1.5rem; display:flex; align-items:center; justify-content:center; transition:color 0.3s;}
+        .refresh-btn:hover { color:#e5e7eb;}
+        .forgot-password { display:flex; justify-content:flex-end; margin-bottom:1.5rem;}
+        .forgot-link { color:#60a5fa; font-size:0.875rem; font-weight:500; text-decoration:none; transition:color 0.3s;}
+        .forgot-link:hover { color:#93c5fd;}
+        .submit-btn { width:100%; height:3.5rem; background:linear-gradient(135deg,#3b82f6 0%,#1d4ed8 100%); color:white; border:none; border-radius:0.75rem; font-weight:600; font-size:1rem; cursor:pointer; transition:all 0.3s ease; box-shadow:0 4px 12px rgba(59,130,246,0.3);}
+        .submit-btn:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 8px 25px rgba(59,130,246,0.4);}
+        .submit-btn:disabled { opacity:0.6; cursor:not-allowed;}
+        .switch-auth { text-align:center; margin-top:1.5rem;}
+        .switch-text { font-size:0.875rem; color:#d1d5db;}
+        .switch-link { color:#60a5fa; font-weight:600; text-decoration:none; margin-left:0.25rem; transition:color 0.3s;}
+        .switch-link:hover { color:#93c5fd;}
+        .footer { text-align:center; margin-top:2rem;}
+        .footer-text { color:#bfdbfe; font-size:0.75rem;}
+        .error-message { color:#fca5a5; font-size:0.875rem; margin-top:0.25rem;}
+        .success-message { color:#86efac; font-size:0.875rem; margin-top:0.25rem;}
+        /* --- Dashboard Styles: Sidebar, Main, Cards, Modals --- */
+        .dashboard-wrapper { min-height:100vh; display:flex; }
+        .sidebar {
+            position: fixed; left: 0; top: 0; height: 100vh; width: 250px;
+            background: hsl(217.2, 32.6%, 17.5%);
+            border-right: 1px solid hsl(217.2, 32.6%, 17.5%);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 40; padding: 24px;
+        }
+        .sidebar.open { transform:translateX(0); }
+        .sidebar-logo { text-align: center; margin-bottom: 32px; }
+        .sidebar-logo h1 { font-size: 24px; font-weight: bold; color: white; margin-bottom: 4px; }
+        .sidebar-logo p { font-size: 14px; color: hsl(215, 20.2%, 65.1%); }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 8px; }
+        .sidebar-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px;
+            background: transparent; border: none; color: hsl(215, 20.2%, 65.1%);
+            border-radius: 8px; cursor: pointer; transition: all 0.2s ease; font-size: 14px; text-align: left;
+        }
+        .sidebar-btn:hover { background: hsl(217.2, 32.6%, 17.5%); color: white; }
+        .sidebar-btn.primary { background: hsl(217.2, 91.2%, 59.8%); color: white; }
+        .sidebar-btn.danger:hover { background: hsl(0, 84.2%, 60.2%); }
+        .mobile-toggle {
+            position: fixed; top: 16px; left: 16px; z-index: 50;
+            background: hsl(217.2, 91.2%, 59.8%); border: none; padding: 8px; border-radius: 6px; color: white; cursor: pointer; display: block;
+        }
+        @media (min-width:1024px) {
+            .mobile-toggle { display:none; }
+            .sidebar { transform:translateX(0); position: relative; }
+        }
+        .main-content { flex:1; margin-left:0; background:hsl(222.2,84%,4.9%);}
+        @media (min-width:1024px) { .main-content { margin-left:250px; } }
+        .p-6 { padding:24px; }
+        .mb-4 { margin-bottom:16px; }
+        .text-center { text-align:center; }
+        /* Cards */
+        .card, .user-card, .info-card, .wallet-card {
+            background: hsl(222.2, 47.4%, 11.2%);
+            border: 1px solid hsl(217.2, 32.6%, 17.5%);
+            border-radius: 12px; padding: 16px; margin-bottom: 16px;
+        }
+        .brand-card {
+            background: linear-gradient(to right, hsl(217.2, 32.6%, 17.5%), hsl(215, 20.2%, 25%));
+            text-align: center; padding: 12px; margin-bottom: 16px;
+        }
+        .brand-card h2 { font-size:32px; font-weight:bold; color:white; margin-bottom:4px; }
+        .brand-card p { color:hsl(262.1,83.3%,57.8%); font-size:14px; }
+        .announcement {
+            background: linear-gradient(to right, hsl(217.2, 91.2%, 59.8%), hsl(262.1, 83.3%, 57.8%));
+            padding:12px; overflow:hidden; margin-bottom:24px;
+        }
+        .announcement-text { white-space:nowrap; animation:slide 20s linear infinite; color:white; font-weight:500; }
+        @keyframes slide { 0%{transform:translateX(100%);} 100%{transform:translateX(-100%);} }
+        .user-info { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; font-size:14px; }
+        .user-info-item span { color:hsl(215,20.2%,65.1%); font-size:12px;}
+        .user-info-item p { color:white; font-weight:600;}
+        .user-info-item.level p { color:hsl(142.1,76.2%,36.3);}
+        /* Wallets */
+        .wallets { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:24px; margin-bottom:24px;}
+        .wallet-card { background:hsl(217.2,32.6%,17.5%); padding:24px; border-radius:12px;}
+        .wallet-label { color:hsl(215,20.2%,65.1%); font-size:14px; margin-bottom:8px;}
+        .wallet-amount { font-size:24px; font-weight:bold; color:white;}
+        .wallet-amount.earning { color:hsl(142.1,76.2%,36.3);}
+        .transfer-btn { background:hsl(142.1,76.2%,36.3); color:white; border:none; padding:8px 16px; border-radius:6px; font-size:12px; cursor:pointer; margin-top:8px;}
+        /* Actions */
+        .action-buttons { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:24px;}
+        .action-btn {
+            padding:24px; border:none; border-radius:12px; color:white; font-weight:600; cursor:pointer;
+            display:flex; flex-direction:column; align-items:center; gap:8px; transition:transform 0.2s ease; min-height:120px;
+        }
+        .action-btn:hover { transform:scale(1.05);}
+        .action-btn.deposit { background:linear-gradient(to right,hsl(142.1,76.2%,36.3%),hsl(142.1,76.2%,46.3%)); }
+        .action-btn.work-hub { background:linear-gradient(to right,hsl(262.1,83.3%,57.8%),hsl(262.1,83.3%,67.8%)); }
+        .action-btn.withdraw { background:linear-gradient(to right,hsl(38,92%,50%),hsl(38,92%,60%)); }
+        .action-btn.live-chat { background:linear-gradient(to right,hsl(217.2,91.2%,59.8%),hsl(217.2,91.2%,69.8%)); }
+        .action-btn.signup-bonus { background:linear-gradient(to right,hsl(0,84.2%,60.2%),hsl(0,84.2%,70.2%)); grid-column:span 2;}
+        /* Advertisement Slider */
+        .slider-container { background:hsl(217.2,32.6%,17.5%); padding:24px; border-radius:12px;}
+        .slider { position:relative; overflow:hidden; border-radius:8px; height:200px;}
+        .slide { position:absolute; width:100%; height:100%; opacity:0; transition:opacity 0.5s ease; }
+        .slide.active { opacity:1; }
+        .slide img { width:100%; height:100%; object-fit:cover; }
+        .slider-dots { position:absolute; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:8px;}
+        .dot { width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.5); cursor:pointer; transition:background 0.2s ease;}
+        .dot.active { background:white;}
+        /* Modal Styles */
+        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:100;}
+        .modal.show { display:flex; }
+        .modal-content { background:hsl(217.2,32.6%,17.5%); border:1px solid hsl(217.2,32.6%,17.5%); border-radius:12px; padding:24px; max-width:500px; width:90%; max-height:80vh; overflow-y:auto;}
+        .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;}
+        .modal-title { font-size:20px; font-weight:bold; color:white;}
+        .close-btn { background:none; border:none; color:hsl(215,20.2%,65.1%); font-size:20px; cursor:pointer; padding:4px;}
+        .close-btn:hover { color:white;}
+        /* Form Styles */
+        .form-group { margin-bottom:16px;}
+        .form-label { display:block; color:hsl(215,20.2%,65.1%); font-size:14px; margin-bottom:4px;}
+        .form-input, .form-select { width:100%; padding:12px; background:hsl(217.2,32.6%,17.5%); border:1px solid hsl(217.2,32.6%,17.5%); border-radius:6px; color:white; font-size:14px;}
+        .form-input::placeholder { color:hsl(215,20.2%,65.1%);}
+        .form-btn { width:100%; padding:12px; background:hsl(142.1,76.2%,36.3%); border:none; border-radius:6px; color:white; font-weight:600; cursor:pointer; transition:background 0.2s ease;}
+        .form-btn:hover { background:hsl(142.1,76.2%,46.3);}
+        .form-btn.warning { background:hsl(38,92%,50%);}
+        .form-btn.warning:hover { background:hsl(38,92%,60%);}
+        .status-message { padding:12px; border-radius:6px; margin-top:16px; font-size:14px;}
+        .status-success { background:rgba(34,197,94,0.2); border:1px solid rgb(34,197,94); color:rgb(34,197,94);}
+        .status-info { background:rgba(59,130,246,0.2); border:1px solid rgb(59,130,246); color:rgb(59,130,246);}
+        /* Bonuses */
+        .bonus-item { display:flex; justify-content:space-between; align-items:center; background:hsl(217.2,32.6%,17.5%); padding:12px; border-radius:8px; margin-bottom:8px;}
+        .bonus-btn { padding:8px 16px; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s ease;}
+        .bonus-btn.available { background:hsl(142.1,76.2%,36.3); color:white;}
+        .bonus-btn.claimed { background:hsl(142.1,76.2%,36.3); color:white; opacity:0.7; cursor:not-allowed;}
+        .bonus-btn.locked { background:hsl(217.2,32.6%,17.5); color:hsl(215,20.2%,65.1); cursor:not-allowed;}
+        /* Profile Info */
+        .profile-field { background:hsl(217.2,32.6%,17.5); padding:16px; border-radius:8px; margin-bottom:12px;}
+        .profile-field label { color:hsl(215,20.2%,65.1); font-size:12px; display:block; margin-bottom:4px;}
+        .profile-field p { color:white; font-weight:600;}
+        @media (max-width: 640px) {
+            .auth-card { padding:1.5rem; }
+            .dashboard-header { flex-direction:column; gap:1rem; text-align:center;}
+            .cards-grid { grid-template-columns:1fr;}
+        }
+        @media (max-width:768px) {
+            .action-buttons { grid-template-columns:repeat(2,1fr);}
+            .action-btn.signup-bonus { grid-column:span 2;}
+            .user-info { grid-template-columns:1fr;}
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Section -->
+    <div id="auth-section" class="container">
+        <div class="auth-card">
+            <div class="header">
+                <div class="logo">
+                    <svg class="logo-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zm-8-2h6v-2h-6v2zm0-4h6V9h-6v4z"/>
+                    </svg>
+                    <h1 class="logo-text">LUXVEST</h1>
+                </div>
+                <p class="tagline">smart investment • global vision</p>
+            </div>
+            <div class="tab-container">
+                <button class="tab-button active" id="login-tab">Sign In</button>
+                <button class="tab-button" id="signup-tab">Sign Up</button>
+            </div>
+            <div id="login-form" class="form-container active">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="label">Phone Number</label>
+                        <input type="tel" class="input-field" name="phone" placeholder="Enter your phone number" required>
+                        <div class="error-message hidden" id="login-phone-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Password</label>
+                        <input type="password" class="input-field" name="password" placeholder="Enter your password" required>
+                        <div class="error-message hidden" id="login-password-error"></div>
+                    </div>
+                    <div class="forgot-password">
+                        <a href="#" class="forgot-link">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="submit-btn" id="login-submit">Sign In</button>
+                    <div class="error-message hidden" id="login-error"></div>
+                    <div class="success-message hidden" id="login-success"></div>
+                </form>
+            </div>
+            <div id="register-form" class="form-container">
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label class="label">Full Name</label>
+                        <input type="text" class="input-field" name="fullName" placeholder="Enter your full name" required>
+                        <div class="error-message hidden" id="register-fullName-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Phone Number</label>
+                        <input type="tel" class="input-field" name="phone" placeholder="Enter your phone number" required>
+                        <div class="error-message hidden" id="register-phone-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Email Address</label>
+                        <input type="email" class="input-field" name="email" placeholder="Enter your email address" required>
+                        <div class="error-message hidden" id="register-email-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Refer Code (Optional)</label>
+                        <input type="text" class="input-field" name="referCode" placeholder="Enter refer code">
+                        <div class="error-message hidden" id="register-referCode-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Password</label>
+                        <input type="password" class="input-field" name="password" placeholder="Create a strong password" required>
+                        <div class="error-message hidden" id="register-password-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Security Verification</label>
+                        <div class="captcha-input">
+                            <input type="text" class="captcha-text" name="captcha" placeholder="Enter code" required>
+                            <span class="captcha-code" id="captcha-display">A3B7X9</span>
+                            <button type="button" class="refresh-btn" id="refresh-captcha">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="error-message hidden" id="register-captcha-error"></div>
+                    </div>
+                    <button type="submit" class="submit-btn" id="register-submit">Create Account</button>
+                    <div class="error-message hidden" id="register-error"></div>
+                    <div class="success-message hidden" id="register-success"></div>
+                </form>
+            </div>
+            <div class="switch-auth">
+                <span class="switch-text" id="switch-text">Don't have an account?</span>
+                <a href="#" class="switch-link" id="switch-link">Sign up here</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p class="footer-text">
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="dashboard-wrapper hidden">
+        <!-- Mobile Toggle Button -->
+        <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <h1>LUXVEST</h1>
+                <p>smart investment • global vision</p>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="sidebar-btn primary" onclick="navigateHome()">🏠 Home</button>
+                <button class="sidebar-btn" onclick="openModal('profile')">👤 Profile</button>
+                <button class="sidebar-btn" onclick="openModal('bankAccount')">🏦 Add Bank Account</button>
+                <button class="sidebar-btn" onclick="openModal('changePassword')">🔑 Change Password</button>
+                <button class="sidebar-btn" onclick="openModal('about')">ℹ️ About</button>
+                <button class="sidebar-btn danger" onclick="handleLogout()">🚪 Logout</button>
+            </nav>
+        </div>
+        <div class="main-content">
+            <div class="p-6" style="padding-bottom: 0;">
+                <div class="brand-card">
+                    <h2>LUXVEST</h2>
+                    <p>smart investment • global vision</p>
+                </div>
+            </div>
+            <!-- Announcement Banner -->
+            <div class="announcement">
+                <div class="announcement-text">
+                    Welcome To Luxvest • Withdraw and Deposit available from 10 AM to 10 PM • Stay with Luxvest for smart investments
+                </div>
+            </div>
+            <div class="p-6">
+                <!-- User Info Card -->
+                <div class="card">
+                    <div class="user-info">
+                        <div class="user-info-item">
+                            <span>Name:</span>
+                            <p id="dashboard-user-name">User</p>
+                        </div>
+                        <div class="user-info-item">
+                            <span>Phone:</span>
+                            <p id="dashboard-user-phone"></p>
+                        </div>
+                        <div class="user-info-item level">
+                            <span>ID Level:</span>
+                            <p id="dashboard-user-level">Elite</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Wallet Balances -->
+                <div class="wallets">
+                    <div class="wallet-card">
+                        <div class="wallet-label">Main Wallet</div>
+                        <div class="wallet-amount" id="main-wallet">৳ 0.00</div>
+                    </div>
+                    <div class="wallet-card">
+                        <div class="wallet-label">Earning Balance</div>
+                        <div class="wallet-amount earning" id="earning-wallet">৳ 0.00</div>
+                        <button class="transfer-btn" onclick="transferEarnings()">→ Transfer</button>
+                    </div>
+                </div>
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="action-btn deposit" onclick="openModal('deposit')">
+                        <span style="font-size: 32px;">+</span>
+                        <span>Deposit</span>
+                    </button>
+                    <button class="action-btn work-hub" onclick="openModal('workHub')">
+                        <span style="font-size: 32px;">💼</span>
+                        <span>Work Hub</span>
+                    </button>
+                    <button class="action-btn withdraw" onclick="openModal('withdraw')">
+                        <span style="font-size: 32px;">-</span>
+                        <span>Withdraw</span>
+                    </button>
+                    <button class="action-btn live-chat" onclick="openModal('liveChat')">
+                        <span style="font-size: 32px;">💬</span>
+                        <span>Live Chat</span>
+                    </button>
+                    <button class="action-btn signup-bonus" onclick="openModal('signupBonus')">
+                        <span style="font-size: 32px;">🎁</span>
+                        <span>Signup Bonus</span>
+                    </button>
+                </div>
+                <!-- Advertisement Slider -->
+                <div class="slider-container">
+                    <h3 style="color: white; font-weight: 600; margin-bottom: 16px;">Company Highlights</h3>
+                    <div class="slider">
+                        <div class="slide active">
+                            <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=400" alt="Slide 1">
+                        </div>
+                        <div class="slide">
+                            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=400" alt="Slide 2">
+                        </div>
+                        <div class="slide">
+                            <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=400" alt="Slide 3">
+                        </div>
+                        <div class="slider-dots">
+                            <div class="dot active" onclick="setSlide(0)"></div>
+                            <div class="dot" onclick="setSlide(1)"></div>
+                            <div class="dot" onclick="setSlide(2)"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals (same as before: deposit, withdraw, workHub, liveChat, signupBonus, profile, bankAccount, changePassword, about) -->
+    <!-- ...[Modals code as in previous file, unchanged, for brevity]... -->
+    <!-- Put all modal blocks here, unchanged, as before -->
+
+    <!-- Deposit Modal -->
+    <div class="modal" id="depositModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Deposit</h3>
+                <button class="close-btn" onclick="closeModal('depositModal')">&times;</button>
+            </div>
+            <form onsubmit="submitDeposit(event)">
+                <div class="form-group">
+                    <label class="form-label">Select Method</label>
+                    <select class="form-select" id="depositMethod" required>
+                        <option value="">Choose payment method</option>
+                        <option value="bkash">Bkash - *****1234</option>
+                        <option value="nagad">Nagad - *****5678</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-input" id="depositAmount" placeholder="Enter amount" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Transaction ID</label>
+                    <input type="text" class="form-input" id="transactionId" placeholder="Enter transaction ID" required>
+                </div>
+                <button type="submit" class="form-btn">Submit</button>
+                <div id="depositMessage" class="status-message status-info hidden">
+                    Processing will take 30-60 minutes
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div class="modal" id="withdrawModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Withdraw</h3>
+                <button class="close-btn" onclick="closeModal('withdrawModal')">&times;</button>
+            </div>
+            <div class="status-message status-info mb-4">
+                <strong>Main Wallet Balance: <span id="withdraw-main-balance">৳ 0.00</span></strong>
+            </div>
+            <form onsubmit="submitWithdraw(event)">
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-input" id="withdrawAmount" placeholder="Enter amount" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Select Method</label>
+                    <select class="form-select" id="withdrawMethod" required>
+                        <option value="">Choose payment method</option>
+                        <option value="bkash">Bkash - *****1234</option>
+                        <option value="nagad">Nagad - *****5678</option>
+                    </select>
+                </div>
+                <button type="submit" class="form-btn warning">Submit</button>
+                <div id="withdrawMessage" class="status-message status-info hidden">
+                    Processing will take 30-60 minutes
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- ... other modals unchanged ... -->
+
+    <!-- Work Hub Modal -->
+    <div class="modal" id="workHubModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Work Hub</h3>
+                <button class="close-btn" onclick="closeModal('workHubModal')">&times;</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="background: hsl(217.2, 32.6%, 17.5%); padding: 16px; border-radius: 8px;">
+                    <h4 style="color: white; font-weight: 600; margin-bottom: 8px;">Premium Investment Plan</h4>
+                    <p style="color: hsl(215, 20.2%, 65.1%); font-size: 14px;">Daily return: 2.5% | Duration: 30 days</p>
+                    <p style="color: hsl(142.1, 76.2%, 36.3%); font-weight: bold;">Minimum: ৳ 1,000</p>
+                </div>
+                <div style="background: hsl(217.2, 32.6%, 17.5%); padding: 16px; border-radius: 8px;">
+                    <h4 style="color: white; font-weight: 600; margin-bottom: 8px;">Gold Investment Plan</h4>
+                    <p style="color: hsl(215, 20.2%, 65.1%); font-size: 14px;">Daily return: 3.0% | Duration: 15 days</p>
+                    <p style="color: hsl(142.1, 76.2%, 36.3%); font-weight: bold;">Minimum: ৳ 5,000</p>
+                </div>
+                <div style="background: hsl(217.2, 32.6%, 17.5%); padding: 16px; border-radius: 8px;">
+                    <h4 style="color: white; font-weight: 600; margin-bottom: 8px;">Diamond Investment Plan</h4>
+                    <p style="color: hsl(215, 20.2%, 65.1%); font-size: 14px;">Daily return: 4.0% | Duration: 7 days</p>
+                    <p style="color: hsl(142.1, 76.2%, 36.3%); font-weight: bold;">Minimum: ৳ 10,000</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Chat Modal -->
+    <div class="modal" id="liveChatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Live Chat</h3>
+                <button class="close-btn" onclick="closeModal('liveChatModal')">&times;</button>
+            </div>
+            <div class="text-center" style="padding: 24px 0;">
+                <div style="font-size: 64px; color: #1DA1F2; margin-bottom: 16px;">📱</div>
+                <p style="color: hsl(215, 20.2%, 65.1%); margin-bottom: 24px;">
+                    Connect with our support team on Telegram
+                </p>
+                <button class="form-btn" onclick="openTelegram()">
+                    📱 Open Telegram
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Signup Bonus Modal -->
+    <div class="modal" id="signupBonusModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Signup Bonus</h3>
+                <button class="close-btn" onclick="closeModal('signupBonusModal')">&times;</button>
+            </div>
+            <div id="bonusList">
+                <div class="bonus-item">
+                    <span style="color: white;">Day 1</span>
+                    <button class="bonus-btn available" onclick="claimBonus(1, 200)">Claim ৳***</button>
+                </div>
+                <div class="bonus-item">
+                    <span style="color: white;">Day 2</span>
+                    <button class="bonus-btn locked" onclick="claimBonus(2, 400)">Claim ৳***</button>
+                </div>
+                <div class="bonus-item">
+                    <span style="color: white;">Day 3</span>
+                    <button class="bonus-btn locked" onclick="claimBonus(3, 600)">Claim ৳***</button>
+                </div>
+                <div class="bonus-item">
+                    <span style="color: white;">Day 4</span>
+                    <button class="bonus-btn locked" onclick="claimBonus(4, 800)">Claim ৳***</button>
+                </div>
+                <div class="bonus-item">
+                    <span style="color: white;">Day 5</span>
+                    <button class="bonus-btn locked" onclick="claimBonus(5, 1000)">Claim ৳***</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Profile</h3>
+                <button class="close-btn" onclick="closeModal('profileModal')">&times;</button>
+            </div>
+            <div class="profile-field">
+                <label>Registered Name</label>
+                <p id="profile-name"></p>
+            </div>
+            <div class="profile-field">
+                <label>Phone Number</label>
+                <p id="profile-phone"></p>
+            </div>
+            <div class="profile-field">
+                <label>Email</label>
+                <p id="profile-email"></p>
+            </div>
+        </div>
+    </div>
+    <!-- Bank Account Modal -->
+    <div class="modal" id="bankAccountModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Bank Account</h3>
+                <button class="close-btn" onclick="closeModal('bankAccountModal')">&times;</button>
+            </div>
+            <form onsubmit="submitBankAccount(event)">
+                <div class="form-group">
+                    <label class="form-label">Account Number</label>
+                    <input type="text" class="form-input" id="accountNumber" placeholder="Enter account number" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Select Method</label>
+                    <select class="form-select" id="accountMethod" required>
+                        <option value="">Choose payment method</option>
+                        <option value="bkash">Bkash</option>
+                        <option value="nagad">Nagad</option>
+                        <option value="rocket">Rocket</option>
+                    </select>
+                </div>
+                <button type="submit" class="form-btn">Submit</button>
+            </form>
+            <div style="color: hsl(215, 20.2%, 65.1%); font-size: 12px; margin-top: 16px;">
+                <p>• Maximum 2 accounts allowed</p>
+                <p>• Accounts cannot be deleted once added</p>
+            </div>
+        </div>
+    </div>
+    <!-- Change Password Modal -->
+    <div class="modal" id="changePasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Change Password</h3>
+                <button class="close-btn" onclick="closeModal('changePasswordModal')">&times;</button>
+            </div>
+            <form onsubmit="submitPasswordChange(event)">
+                <div class="form-group">
+                    <label class="form-label">Email ID</label>
+                    <input type="email" class="form-input" id="change-email" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Old Password</label>
+                    <input type="password" class="form-input" id="oldPassword" placeholder="Enter old password" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-input" id="newPassword" placeholder="Enter new password" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm new password" required>
+                </div>
+                <button type="submit" class="form-btn">Submit</button>
+            </form>
+        </div>
+    </div>
+    <!-- About Modal -->
+    <div class="modal" id="aboutModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">About LUXVEST</h3>
+                <button class="close-btn" onclick="closeModal('aboutModal')">&times;</button>
+            </div>
+            <div style="line-height: 1.6; color: hsl(215, 20.2%, 65.1%);">
+                <p style="margin-bottom: 16px;">
+                    LUXVEST is a leading investment platform that combines smart investment strategies with global vision. We provide our clients with innovative financial solutions and opportunities to grow their wealth through carefully curated investment plans.
+                </p>
+                <p style="margin-bottom: 16px;">
+                    Our mission is to democratize access to premium investment opportunities while maintaining the highest standards of security and transparency. With our user-friendly platform and expert guidance, we help investors achieve their financial goals.
+                </p>
+                <div style="background: hsl(217.2, 32.6%, 17.5%); padding: 16px; border-radius: 8px;">
+                    <h4 style="color: white; font-weight: 600; margin-bottom: 8px;">Key Features:</h4>
+                    <ul style="color: hsl(215, 20.2%, 65.1%); font-size: 14px; list-style-position: inside;">
+                        <li>• Multiple investment plans with competitive returns</li>
+                        <li>• 24/7 customer support</li>
+                        <li>• Secure and fast transactions</li>
+                        <li>• User-friendly interface</li>
+                        <li>• Daily signup bonuses</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts: Unified logic for both sections -->
+    <script>
+        // --- Auth & Dashboard State ---
+        let currentUser = null;
+        let currentCaptcha = 'A3B7X9';
+        let authToken = null;
+        let currentSlide = 0;
+        let claimedBonuses = [];
+        let accountCount = 0;
+        const maxAccounts = 2;
+
+        // DOM elements
+        const authSection = document.getElementById('auth-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const loginTab = document.getElementById('login-tab');
+        const signupTab = document.getElementById('signup-tab');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const switchText = document.getElementById('switch-text');
+        const switchLink = document.getElementById('switch-link');
+        const captchaDisplay = document.getElementById('captcha-display');
+        const refreshCaptcha = document.getElementById('refresh-captcha');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+            setupEventListeners();
+            generateCaptcha();
+            updateBonusUI();
+        });
+
+        // --- Auth Logic ---
+        function checkAuthStatus() {
+            const token = localStorage.getItem('luxvest_token');
+            if (token) {
+                authToken = token;
+                fetch('/api/user', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.user) {
+                        currentUser = data.user;
+                        showDashboard();
+                    }
+                })
+                .catch(() => handleLogout());
+            }
+        }
+
+        function setupEventListeners() {
+            loginTab.addEventListener('click', () => switchTab('login'));
+            signupTab.addEventListener('click', () => switchTab('signup'));
+            switchLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchTab(loginTab.classList.contains('active') ? 'signup' : 'login');
+            });
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            refreshCaptcha.addEventListener('click', generateCaptcha);
+        }
+
+        function switchTab(tab) {
+            clearErrors();
+            if (tab === 'login') {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+                switchText.textContent = "Don't have an account?";
+                switchLink.textContent = "Sign up here";
+            } else {
+                loginTab.classList.remove('active');
+                signupTab.classList.add('active');
+                loginForm.classList.remove('active');
+                registerForm.classList.add('active');
+                switchText.textContent = "Already have an account?";
+                switchLink.textContent = "Sign in here";
+                generateCaptcha();
+            }
+        }
+
+        function generateCaptcha() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            currentCaptcha = result;
+            captchaDisplay.textContent = result;
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            clearErrors();
+            const formData = new FormData(e.target);
+            const phone = formData.get('phone').trim();
+            const password = formData.get('password');
+            let hasError = false;
+            if (!phone) { showError('login-phone-error', 'Phone number is required'); hasError = true; }
+            if (!password) { showError('login-password-error', 'Password is required'); hasError = true; }
+            if (hasError) return;
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    showError('login-error', data.error);
+                } else {
+                    authToken = data.token;
+                    localStorage.setItem('luxvest_token', data.token);
+                    currentUser = data.user;
+                    showSuccess('login-success', 'Login successful! Redirecting...');
+                    setTimeout(showDashboard, 1000);
+                }
+            })
+            .catch(() => showError('login-error', 'Network error!'));
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            clearErrors();
+            const formData = new FormData(e.target);
+            const fullName = formData.get('fullName').trim();
+            const phone = formData.get('phone').trim();
+            const email = formData.get('email').trim();
+            const password = formData.get('password');
+            const referCode = formData.get('referCode').trim();
+            const captcha = formData.get('captcha').trim();
+
+            let hasError = false;
+            if (!fullName) { showError('register-fullName-error', 'Full name is required'); hasError = true; }
+            if (!phone) { showError('register-phone-error', 'Phone number is required'); hasError = true; }
+            else if (!/^\+?[\d\s\-\(\)]+$/.test(phone)) { showError('register-phone-error', 'Please enter a valid phone number'); hasError = true; }
+            if (!email) { showError('register-email-error', 'Email is required'); hasError = true; }
+            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('register-email-error', 'Please enter a valid email address'); hasError = true; }
+            if (!password) { showError('register-password-error', 'Password is required'); hasError = true; }
+            else if (password.length < 8) { showError('register-password-error', 'Password must be at least 8 characters long'); hasError = true; }
+            if (!captcha) { showError('register-captcha-error', 'Please enter the captcha code'); hasError = true; }
+            else if (captcha.toUpperCase() !== currentCaptcha) { showError('register-captcha-error', 'Invalid captcha code'); hasError = true; }
+            if (hasError) return;
+
+            fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fullName, phone, email, password, referCode })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    showError('register-error', data.error);
+                } else {
+                    authToken = data.token;
+                    localStorage.setItem('luxvest_token', data.token);
+                    currentUser = data.user;
+                    showSuccess('register-success', 'Account created successfully! Redirecting...');
+                    setTimeout(showDashboard, 1000);
+                }
+            })
+            .catch(() => showError('register-error', 'Network error!'));
+        }
+
+        function showDashboard() {
+            authSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            // Dashboard user info
+            document.getElementById('dashboard-user-name').textContent = currentUser.fullName;
+            document.getElementById('dashboard-user-phone').textContent = currentUser.phone;
+            document.getElementById('main-wallet').textContent = `৳ ${(currentUser.mainWallet || 0).toLocaleString('en-BD', {minimumFractionDigits:2})}`;
+            document.getElementById('earning-wallet').textContent = `৳ ${(currentUser.earningWallet || 0).toLocaleString('en-BD', {minimumFractionDigits:2})}`;
+            document.getElementById('withdraw-main-balance').textContent = `৳ ${(currentUser.mainWallet || 0).toLocaleString('en-BD', {minimumFractionDigits:2})}`;
+            // Profile modal info
+            document.getElementById('profile-name').textContent = currentUser.fullName;
+            document.getElementById('profile-phone').textContent = currentUser.phone;
+            document.getElementById('profile-email').textContent = currentUser.email;
+            document.getElementById('change-email').value = currentUser.email;
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('luxvest_token');
+                currentUser = null;
+                authToken = null;
+                authSection.classList.remove('hidden');
+                dashboardSection.classList.add('hidden');
+                document.getElementById('loginForm').reset();
+                document.getElementById('registerForm').reset();
+                clearErrors();
+                switchTab('login');
+            }
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.classList.remove('hidden');
+        }
+
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.classList.remove('hidden');
+        }
+
+        function clearErrors() {
+            const errorElements = document.querySelectorAll('.error-message, .success-message');
+            errorElements.forEach(el => {
+                el.textContent = '';
+                el.classList.add('hidden');
+            });
+        }
+
+        // --- Dashboard Logic ---
+        // Sidebar functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+        function navigateHome() { closeSidebar(); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
+
+        // Modal functionality
+        function openModal(modalId) {
+            closeSidebar();
+            document.getElementById(modalId + 'Modal').classList.add('show');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+
+        // Slider functionality
+        function setSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.dot');
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            slides[index].classList.add('active');
+            dots[index].classList.add('active');
+            currentSlide = index;
+        }
+        function nextSlide() {
+            const slides = document.querySelectorAll('.slide');
+            currentSlide = (currentSlide + 1) % slides.length;
+            setSlide(currentSlide);
+        }
+        setInterval(nextSlide, 5000);
+
+        // Transfer earnings
+        function transferEarnings() {
+            alert('Transfer functionality would be implemented here');
+        }
+
+        // Deposit
+        function submitDeposit(event) {
+            event.preventDefault();
+            const method = document.getElementById('depositMethod').value;
+            const amount = document.getElementById('depositAmount').value;
+            const transactionId = document.getElementById('transactionId').value;
+            if (!method || !amount || !transactionId) {
+                alert('Please fill in all fields');
+                return;
+            }
+            // Example API call:
+            /*
+            fetch('/api/deposit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ method, amount, transactionId })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('depositMessage').classList.remove('hidden');
+                }
+            });
+            */
+            document.getElementById('depositMessage').classList.remove('hidden');
+            alert('Deposit submitted successfully!');
+            setTimeout(() => {
+                document.getElementById('depositMessage').classList.add('hidden');
+                event.target.reset();
+            }, 3000);
+        }
+
+        // Withdraw
+        function submitWithdraw(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const method = document.getElementById('withdrawMethod').value;
+            const balance = currentUser ? parseFloat(currentUser.mainWallet || '0') : 0;
+            if (!amount || !method) {
+                alert('Please fill in all fields');
+                return;
+            }
+            if (amount > balance) {
+                alert('Insufficient balance');
+                return;
+            }
+            document.getElementById('withdrawMessage').classList.remove('hidden');
+            alert('Withdrawal submitted successfully!');
+            setTimeout(() => {
+                document.getElementById('withdrawMessage').classList.add('hidden');
+                event.target.reset();
+            }, 3000);
+        }
+
+        // Bank Account
+        function submitBankAccount(event) {
+            event.preventDefault();
+            if (accountCount >= maxAccounts) {
+                alert('Maximum 2 accounts allowed');
+                return;
+            }
+            const accountNumber = document.getElementById('accountNumber').value;
+            const method = document.getElementById('accountMethod').value;
+            if (!accountNumber || !method) {
+                alert('Please fill in all fields');
+                return;
+            }
+            accountCount++;
+            alert('Bank account added successfully!');
+            event.target.reset();
+        }
+
+        // Change Password
+        function submitPasswordChange(event) {
+            event.preventDefault();
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            if (!oldPassword || !newPassword || !confirmPassword) {
+                alert('Please fill in all fields');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match');
+                return;
+            }
+            if (newPassword.length < 8) {
+                alert('Password must be at least 8 characters long');
+                return;
+            }
+            alert('Password changed successfully!');
+            closeModal('changePasswordModal');
+            event.target.reset();
+        }
+
+        // Bonus functionality
+        function claimBonus(day, amount) {
+            if (claimedBonuses.includes(day)) return;
+            if (day === 1 || claimedBonuses.includes(day - 1)) {
+                claimedBonuses.push(day);
+                updateBonusUI();
+                alert(`You have claimed ৳${amount} for Day ${day}!`);
+            } else {
+                alert('Complete previous days first');
+            }
+        }
+        function updateBonusUI() {
+            const bonusItems = document.querySelectorAll('.bonus-btn');
+            bonusItems.forEach((btn, index) => {
+                const day = index + 1;
+                if (claimedBonuses.includes(day)) {
+                    btn.textContent = 'Claimed';
+                    btn.className = 'bonus-btn claimed';
+                } else if (day === 1 || claimedBonuses.includes(day - 1)) {
+                    btn.className = 'bonus-btn available';
+                } else {
+                    btn.className = 'bonus-btn locked';
+                }
+            });
+        }
+
+        // Telegram
+        function openTelegram() {
+            alert('Telegram link would open here');
+            // window.open('https://t.me/your_telegram_username', '_blank');
+        }
+    </script>
+</body>
+</html>
